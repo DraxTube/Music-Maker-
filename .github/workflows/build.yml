@@ -1,0 +1,34 @@
+name: Compile Music Maker
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+      env:
+        PATH: /opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install calico headers
+      run: |
+        git clone --depth=1 https://github.com/devkitPro/calico.git /tmp/calico
+        cp -r /tmp/calico/include/* /opt/devkitpro/libnds/include/
+
+    - name: Build
+      run: make
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: MusicMaker_Build
+        path: MusicMaker.nds
